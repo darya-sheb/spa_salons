@@ -1,0 +1,80 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: microservices
+    ports:
+      - "6060:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d microservices" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./database_backup:/var/lib/postgresql/data
+  salons-app:
+    build: ./salons
+    container_name: salons-service
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/microservices
+    ports:
+      - "7070:8000"
+    volumes:
+      - ./salons:/app
+
+  clients-app:
+    build: ./clients
+    container_name: clients-service
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/microservices
+    ports:
+      - "7071:8001"
+    volumes:
+      - ./clients:/app
+
+  services-app:
+    build: ./services
+    container_name: services-service
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/microservices
+    ports:
+      - "7072:8002"
+    volumes:
+      - ./services:/app
+
+  time_slots-app:
+    build: ./time_slots
+    container_name: time_slots-service
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/microservices
+    ports:
+      - "7073:8003"
+    volumes:
+      - ./time_slots:/app
+
+  appointments-app:
+    build: ./appointments
+    container_name: appointments-service
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/microservices
+    ports:
+      - "7074:8004"
+    volumes:
+      - ./appointments:/app
